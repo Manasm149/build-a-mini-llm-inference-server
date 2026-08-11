@@ -60,7 +60,7 @@ python scaffold.py
 - [x] **48.** inter_token_latency
 - [x] **49.** aggregate_throughput
 - [x] **50.** latency_percentiles
-- [ ] **51.** run_throughput_latency_benchmark
+- [x] **51.** run_throughput_latency_benchmark
 
 ---
 

@@ -1166,6 +1166,132 @@ def latency_percentiles(latencies, percentiles):
         for p in percentiles
     }
 
-# Step 51 - run_throughput_latency_benchmark (not yet solved)
-# TODO: implement
+# Step 51 - run_throughput_latency_benchmark
+import time
+
+
+def run_throughput_latency_benchmark(
+    params,
+    allocator_config,
+    vocab,
+    prompts,
+    sampling_config,
+    max_new_tokens,
+    max_steps
+):
+    server_state = {
+        'waiting_heap': [],
+        'running': [],
+        'completed': {},
+        'streams': [],
+        'next_request_id': 0
+    }
+
+    # Handle the empty-prompt benchmark case cleanly.
+    if not prompts:
+        total_time = 0.0
+
+        percentiles = latency_percentiles(
+            [],
+            sampling_config.get('percentiles', [50, 90, 99])
+        )
+
+        throughput = aggregate_throughput([], 1.0)
+
+        return {
+            'ttft': {},
+            'itl': {},
+            'throughput': throughput,
+            'percentiles': percentiles,
+            'total_time': total_time
+        }
+
+    allocator = init_block_allocator(
+        allocator_config['num_blocks'],
+        allocator_config['block_size'],
+        allocator_config['d_model']
+    )
+
+    events = []
+    start = time.perf_counter()
+
+    # Submit all requests.
+    for prompt in prompts:
+        request_id = submit_request(
+            server_state,
+            prompt,
+            max_new_tokens,
+            0,
+            vocab
+        )
+
+        events.append({
+            'request_id': request_id,
+            'event': 'submit',
+            'type': 'submit',
+            'time': time.perf_counter() - start
+        })
+
+    # Drive the server.
+    drive_until_complete(
+        server_state,
+        params,
+        vocab,
+        allocator,
+        sampling_config,
+        max_steps
+    )
+
+    # Convert stream chunks into benchmark events.
+    first_token_seen = set()
+
+    for chunk in server_state.get('streams', []):
+        request_id = chunk['request_id']
+        event_time = time.perf_counter() - start
+
+        event_type = (
+            'first_token'
+            if request_id not in first_token_seen
+            else 'token'
+        )
+
+        events.append({
+            'request_id': request_id,
+            'event': 'token',
+            'type': event_type,
+            'time': event_time
+        })
+
+        first_token_seen.add(request_id)
+
+        if chunk['finished']:
+            events.append({
+                'request_id': request_id,
+                'event': 'finish',
+                'type': 'finish',
+                'time': event_time
+            })
+
+    total_time = time.perf_counter() - start
+
+    ttft = time_to_first_token(events)
+    itl = inter_token_latency(events)
+
+    throughput = aggregate_throughput(
+        events,
+        total_time if total_time > 0 else 1.0
+    )
+
+    percentiles = latency_percentiles(
+        list(ttft.values()),
+        sampling_config.get('percentiles', [50, 90, 99])
+    )
+
+    return {
+        'ttft': ttft,
+        'itl': itl,
+        'throughput': throughput,
+        'percentiles': percentiles,
+        'total_time': total_time
+    }
 
