@@ -489,8 +489,45 @@ def build_batch_step_input(states):
         'input_ids': np.asarray(input_ids, dtype=np.int64)
     }
 
-# Step 32 - batched_decode_step (not yet solved)
-# TODO: implement
+# Step 32 - batched_decode_step
+def batched_decode_step(params, sequences, sampling_params):
+    rng = sampling_params.get('rng', np.random.default_rng())
+
+    for seq in sequences:
+        if seq['done']:
+            continue
+
+        # Run one decode step using this sequence's own KV cache.
+        logits, cache = model_decode_step(
+            seq['token_ids'][-1],
+            seq['kv_cache'],
+            params
+        )
+
+        seq['kv_cache'] = cache
+
+        temperature = sampling_params.get('temperature', 1.0)
+        greedy = sampling_params.get('greedy', False)
+
+        if greedy or temperature <= 0:
+            next_token = greedy_select(logits)
+        else:
+            logits = apply_temperature(logits, temperature)
+
+            top_k = sampling_params.get('top_k', 0)
+            if top_k > 0:
+                logits = top_k_filter(logits, top_k)
+
+            top_p = sampling_params.get('top_p', 1.0)
+            if top_p < 1.0:
+                logits = top_p_filter(logits, top_p)
+
+            probs = stable_softmax(logits)
+            next_token = sample_from_probs(probs, rng)
+
+        seq['token_ids'].append(next_token)
+
+    return sequences
 
 # Step 33 - static_batch_generate (not yet solved)
 # TODO: implement
