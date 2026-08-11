@@ -412,8 +412,45 @@ def init_sequence_state(request, params):
         'sampling_params': request['sampling_params']
     }
 
-# Step 28 - sequence_decode_step (not yet solved)
-# TODO: implement
+# Step 28 - sequence_decode_step
+def sequence_decode_step(state, params, rng=None):
+    sampling = state['sampling_params']
+    logits = state['last_logits']
+
+    if rng is None:
+        rng = np.random.default_rng()
+
+    temperature = sampling.get('temperature', 1.0)
+
+    # Greedy if explicitly requested or temperature is non-positive
+    if sampling.get('greedy', False) or temperature <= 0:
+        next_token_id = greedy_select(logits)
+    else:
+        filtered = apply_temperature(logits, temperature)
+
+        top_k = sampling.get('top_k', 0)
+        if top_k > 0:
+            filtered = top_k_filter(filtered, top_k)
+
+        top_p = sampling.get('top_p', 1.0)
+        if top_p < 1.0:
+            filtered = top_p_filter(filtered, top_p)
+
+        probs = stable_softmax(filtered)
+        next_token_id = sample_from_probs(probs, rng)
+
+    # Advance the model using the selected token
+    new_logits, cache = model_decode_step(
+        next_token_id,
+        state['cache'],
+        params
+    )
+
+    state['cache'] = cache
+    state['last_logits'] = new_logits
+    state['generated'].append(next_token_id)
+
+    return next_token_id, state
 
 # Step 29 - is_sequence_done (not yet solved)
 # TODO: implement

@@ -37,7 +37,7 @@ python scaffold.py
 - [x] **25.** kv_blocks_in_use
 - [x] **26.** make_request
 - [x] **27.** init_sequence_state
-- [ ] **28.** sequence_decode_step
+- [x] **28.** sequence_decode_step
 - [ ] **29.** is_sequence_done
 - [ ] **30.** generate_single_sequence
 - [ ] **31.** build_batch_step_input
