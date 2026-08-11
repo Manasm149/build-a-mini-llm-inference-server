@@ -14,7 +14,7 @@ python scaffold.py
 - [x] **2.** apply_temperature
 - [x] **3.** top_k_filter
 - [x] **4.** top_p_filter
-- [ ] **5.** sample_from_probs
+- [x] **5.** sample_from_probs
 - [ ] **6.** greedy_select
 - [ ] **7.** build_vocab
 - [ ] **8.** encode_prompt
