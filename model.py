@@ -465,8 +465,14 @@ def is_sequence_done(state, eos_token_id):
 
     return False
 
-# Step 30 - generate_single_sequence (not yet solved)
-# TODO: implement
+# Step 30 - generate_single_sequence
+def generate_single_sequence(request, params, eos_token_id, rng=None):
+    state = init_sequence_state(request, params)
+
+    while not is_sequence_done(state, eos_token_id):
+        _, state = sequence_decode_step(state, params, rng)
+
+    return list(state['generated'])
 
 # Step 31 - build_batch_step_input (not yet solved)
 # TODO: implement
