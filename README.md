@@ -18,7 +18,7 @@ python scaffold.py
 - [x] **6.** greedy_select
 - [x] **7.** build_vocab
 - [x] **8.** encode_prompt
-- [ ] **9.** decode_tokens
+- [x] **9.** decode_tokens
 - [ ] **10.** embed_tokens
 - [ ] **11.** linear_projection
 - [ ] **12.** init_kv_cache
