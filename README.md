@@ -17,7 +17,7 @@ python scaffold.py
 - [x] **5.** sample_from_probs
 - [x] **6.** greedy_select
 - [x] **7.** build_vocab
-- [ ] **8.** encode_prompt
+- [x] **8.** encode_prompt
 - [ ] **9.** decode_tokens
 - [ ] **10.** embed_tokens
 - [ ] **11.** linear_projection

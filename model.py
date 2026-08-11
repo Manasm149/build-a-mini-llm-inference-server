@@ -107,8 +107,23 @@ def build_vocab(corpus, special_tokens):
         'id_to_token': tokens
     }
 
-# Step 8 - encode_prompt (not yet solved)
-# TODO: implement
+# Step 8 - encode_prompt
+def encode_prompt(text, vocab, add_bos=True):
+    token_to_id = vocab['token_to_id']
+    ids = []
+
+    if add_bos:
+        ids.append(token_to_id['<bos>'])
+
+    unk_id = token_to_id.get('<unk>')
+
+    for ch in text:
+        if ch in token_to_id:
+            ids.append(token_to_id[ch])
+        elif unk_id is not None:
+            ids.append(unk_id)
+
+    return ids
 
 # Step 9 - decode_tokens (not yet solved)
 # TODO: implement
