@@ -142,8 +142,9 @@ def decode_tokens(token_ids, vocab, skip_special=True):
 
     return ''.join(tokens)
 
-# Step 10 - embed_tokens (not yet solved)
-# TODO: implement
+# Step 10 - embed_tokens
+def embed_tokens(token_ids, embedding_matrix):
+    return embedding_matrix[np.asarray(token_ids)]
 
 # Step 11 - linear_projection (not yet solved)
 # TODO: implement

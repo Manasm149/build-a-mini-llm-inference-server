@@ -19,7 +19,7 @@ python scaffold.py
 - [x] **7.** build_vocab
 - [x] **8.** encode_prompt
 - [x] **9.** decode_tokens
-- [ ] **10.** embed_tokens
+- [x] **10.** embed_tokens
 - [ ] **11.** linear_projection
 - [ ] **12.** init_kv_cache
 - [ ] **13.** append_kv
