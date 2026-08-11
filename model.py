@@ -201,8 +201,34 @@ def causal_attention(q, k, v, is_causal=True):
 
     return weights @ v
 
-# Step 15 - model_prefill (not yet solved)
-# TODO: implement
+# Step 15 - model_prefill
+def model_prefill(token_ids, params):
+    # Embed tokens
+    x = embed_tokens(token_ids, params['embedding'])
+
+    # Project Q, K, V
+    q = linear_projection(x, params['Wq'])
+    k = linear_projection(x, params['Wk'])
+    v = linear_projection(x, params['Wv'])
+
+    # Create a fresh cache for this sequence
+    cache = init_kv_cache(params['max_seq_len'], x.shape[-1])
+
+    # Store all K/V vectors
+    append_kv(cache, k, v)
+
+    # Attend over the prompt
+    k_cache = cache['K'][:cache['length']]
+    v_cache = cache['V'][:cache['length']]
+    x = causal_attention(q, k_cache, v_cache, is_causal=True)
+
+    # Output projection
+    x = linear_projection(x, params['Wo'])
+
+    # Project only the final position to vocabulary logits
+    logits = linear_projection(x[-1], params['W_out'])
+
+    return logits, cache
 
 # Step 16 - model_decode_step (not yet solved)
 # TODO: implement
