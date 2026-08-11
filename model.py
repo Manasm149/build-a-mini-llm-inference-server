@@ -362,8 +362,17 @@ def paged_attention_step(q, allocator, seq_id):
 
     return weights @ V
 
-# Step 24 - free_sequence_blocks (not yet solved)
-# TODO: implement
+# Step 24 - free_sequence_blocks
+def free_sequence_blocks(allocator, seq_id):
+    blocks = allocator['seq_tables'].get(seq_id, [])
+
+    for block_id in blocks:
+        free_block(allocator, block_id)
+
+    allocator['seq_tables'].pop(seq_id, None)
+
+    if 'seq_lengths' in allocator:
+        allocator['seq_lengths'].pop(seq_id, None)
 
 # Step 25 - kv_blocks_in_use (not yet solved)
 # TODO: implement
