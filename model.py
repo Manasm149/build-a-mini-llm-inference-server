@@ -474,8 +474,20 @@ def generate_single_sequence(request, params, eos_token_id, rng=None):
 
     return list(state['generated'])
 
-# Step 31 - build_batch_step_input (not yet solved)
-# TODO: implement
+# Step 31 - build_batch_step_input
+def build_batch_step_input(states):
+    active_indices = []
+    input_ids = []
+
+    for i, state in enumerate(states):
+        if not state['done']:
+            active_indices.append(i)
+            input_ids.append(state['token_ids'][-1])
+
+    return {
+        'active_indices': active_indices,
+        'input_ids': np.asarray(input_ids, dtype=np.int64)
+    }
 
 # Step 32 - batched_decode_step (not yet solved)
 # TODO: implement
