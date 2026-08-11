@@ -31,7 +31,7 @@ python scaffold.py
 - [x] **19.** allocate_block
 - [x] **20.** free_block
 - [x] **21.** append_to_paged_cache
-- [ ] **22.** gather_kv_from_blocks
+- [x] **22.** gather_kv_from_blocks
 - [ ] **23.** paged_attention_step
 - [ ] **24.** free_sequence_blocks
 - [ ] **25.** kv_blocks_in_use
