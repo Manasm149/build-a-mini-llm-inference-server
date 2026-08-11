@@ -1078,8 +1078,33 @@ def build_completion_response(server_state, request_id, vocab):
         )
     }
 
-# Step 47 - time_to_first_token (not yet solved)
-# TODO: implement
+# Step 47 - time_to_first_token
+def time_to_first_token(events):
+    submit_times = {}
+    first_token_times = {}
+
+    for event in events:
+        request_id = event['request_id']
+        event_type = event['event']
+        t = event['time']
+
+        if event_type == 'submit':
+            submit_times[request_id] = t
+
+        elif event_type == 'token':
+            if request_id in submit_times:
+                if request_id not in first_token_times:
+                    first_token_times[request_id] = t
+                else:
+                    first_token_times[request_id] = min(
+                        first_token_times[request_id],
+                        t
+                    )
+
+    return {
+        request_id: first_token_times[request_id] - submit_times[request_id]
+        for request_id in first_token_times
+    }
 
 # Step 48 - inter_token_latency (not yet solved)
 # TODO: implement
