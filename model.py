@@ -351,8 +351,16 @@ def gather_kv_from_blocks(allocator, seq_id):
 
     return K, V
 
-# Step 23 - paged_attention_step (not yet solved)
-# TODO: implement
+# Step 23 - paged_attention_step
+def paged_attention_step(q, allocator, seq_id):
+    K, V = gather_kv_from_blocks(allocator, seq_id)
+
+    d_model = q.shape[-1]
+    scores = (q @ K.T) / np.sqrt(d_model)
+
+    weights = stable_softmax(scores)
+
+    return weights @ V
 
 # Step 24 - free_sequence_blocks (not yet solved)
 # TODO: implement
