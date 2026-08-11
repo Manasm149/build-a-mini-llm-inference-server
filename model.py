@@ -268,8 +268,17 @@ def blocks_needed(num_tokens, block_size):
         return 0
     return (num_tokens + block_size - 1) // block_size
 
-# Step 18 - init_block_allocator (not yet solved)
-# TODO: implement
+# Step 18 - init_block_allocator
+def init_block_allocator(num_blocks, block_size, d_model):
+    return {
+        'K_blocks': np.zeros((num_blocks, block_size, d_model), dtype=np.float32),
+        'V_blocks': np.zeros((num_blocks, block_size, d_model), dtype=np.float32),
+        'free_list': list(range(num_blocks)),
+        'block_size': block_size,
+        'num_blocks': num_blocks,
+        'd_model': d_model,
+        'seq_tables': {}
+    }
 
 # Step 19 - allocate_block (not yet solved)
 # TODO: implement
