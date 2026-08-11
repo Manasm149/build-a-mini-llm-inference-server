@@ -386,8 +386,14 @@ def kv_blocks_in_use(allocator):
         'total': total
     }
 
-# Step 26 - make_request (not yet solved)
-# TODO: implement
+# Step 26 - make_request
+def make_request(request_id, prompt_token_ids, max_new_tokens, sampling_params):
+    return {
+        'request_id': request_id,
+        'prompt_token_ids': list(prompt_token_ids),
+        'max_new_tokens': max_new_tokens,
+        'sampling_params': sampling_params
+    }
 
 # Step 27 - init_sequence_state (not yet solved)
 # TODO: implement
