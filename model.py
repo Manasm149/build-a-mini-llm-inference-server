@@ -898,8 +898,14 @@ def schedule_step(waiting_heap, running, allocator, block_size, max_running):
         'newly_admitted': newly_admitted
     }
 
-# Step 42 - format_stream_chunk (not yet solved)
-# TODO: implement
+# Step 42 - format_stream_chunk
+def format_stream_chunk(request_id, token_id, token_text, finished):
+    return {
+        'request_id': request_id,
+        'token_id': token_id,
+        'text': token_text,
+        'finished': finished
+    }
 
 # Step 43 - submit_request (not yet solved)
 # TODO: implement
