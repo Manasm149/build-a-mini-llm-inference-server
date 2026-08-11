@@ -607,8 +607,9 @@ def static_batch_generate(params, requests, sampling_params, max_new_tokens):
         for seq in sequences
     ]
 
-# Step 34 - has_free_capacity (not yet solved)
-# TODO: implement
+# Step 34 - has_free_capacity
+def has_free_capacity(allocator, required_blocks):
+    return len(allocator['free_list']) >= required_blocks
 
 # Step 35 - continuous_batch_step (not yet solved)
 # TODO: implement
