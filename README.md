@@ -34,7 +34,7 @@ python scaffold.py
 - [x] **22.** gather_kv_from_blocks
 - [x] **23.** paged_attention_step
 - [x] **24.** free_sequence_blocks
-- [ ] **25.** kv_blocks_in_use
+- [x] **25.** kv_blocks_in_use
 - [ ] **26.** make_request
 - [ ] **27.** init_sequence_state
 - [ ] **28.** sequence_decode_step
