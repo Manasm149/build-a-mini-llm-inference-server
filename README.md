@@ -42,7 +42,7 @@ python scaffold.py
 - [x] **30.** generate_single_sequence
 - [x] **31.** build_batch_step_input
 - [x] **32.** batched_decode_step
-- [ ] **33.** static_batch_generate
+- [x] **33.** static_batch_generate
 - [ ] **34.** has_free_capacity
 - [ ] **35.** continuous_batch_step
 - [ ] **36.** run_continuous_batching

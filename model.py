@@ -529,8 +529,83 @@ def batched_decode_step(params, sequences, sampling_params):
 
     return sequences
 
-# Step 33 - static_batch_generate (not yet solved)
-# TODO: implement
+# Step 33 - static_batch_generate
+def static_batch_generate(params, requests, sampling_params, max_new_tokens):
+    sequences = []
+
+    # Prefill every request
+    for req in requests:
+        logits, cache = model_prefill(
+            req['prompt_token_ids'],
+            params
+        )
+
+        sequences.append({
+            'request_id': req['request_id'],
+            'token_ids': list(req['prompt_token_ids']),
+            'kv_cache': cache,
+            'last_logits': logits,
+            'output_ids': [],
+            'done': False,
+            'max_new_tokens': req['max_new_tokens']
+        })
+
+    # Synchronized decode
+    for _ in range(max_new_tokens):
+        active = False
+
+        for seq in sequences:
+            if len(seq['output_ids']) >= seq['max_new_tokens']:
+                seq['done'] = True
+
+            if not seq['done']:
+                active = True
+
+        if not active:
+            break
+
+        for seq in sequences:
+            if seq['done']:
+                continue
+
+            logits = seq['last_logits']
+            temperature = sampling_params.get('temperature', 1.0)
+
+            if sampling_params.get('greedy', False) or temperature <= 0:
+                token = greedy_select(logits)
+            else:
+                logits = apply_temperature(logits, temperature)
+
+                top_k = sampling_params.get('top_k', 0)
+                if top_k > 0:
+                    logits = top_k_filter(logits, top_k)
+
+                top_p = sampling_params.get('top_p', 1.0)
+                if top_p < 1.0:
+                    logits = top_p_filter(logits, top_p)
+
+                probs = stable_softmax(logits)
+                rng = sampling_params.get('rng', np.random.default_rng())
+                token = sample_from_probs(probs, rng)
+
+            seq['output_ids'].append(token)
+
+            logits, cache = model_decode_step(
+                token,
+                seq['kv_cache'],
+                params
+            )
+
+            seq['last_logits'] = logits
+            seq['kv_cache'] = cache
+
+    return [
+        {
+            'request_id': seq['request_id'],
+            'output_ids': list(seq['output_ids'])
+        }
+        for seq in sequences
+    ]
 
 # Step 34 - has_free_capacity (not yet solved)
 # TODO: implement
