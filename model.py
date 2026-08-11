@@ -611,8 +611,78 @@ def static_batch_generate(params, requests, sampling_params, max_new_tokens):
 def has_free_capacity(allocator, required_blocks):
     return len(allocator['free_list']) >= required_blocks
 
-# Step 35 - continuous_batch_step (not yet solved)
-# TODO: implement
+# Step 35 - continuous_batch_step
+def continuous_batch_step(params, running, allocator, sampling_config):
+    eos_token_id = sampling_config.get('eos_token_id')
+    rng = sampling_config.get('rng', np.random.default_rng())
+
+    for seq in running:
+        if seq['done']:
+            continue
+
+        # Last token currently in the sequence
+        token_id = seq['token_ids'][-1]
+
+        # Project to Q, K, V
+        x = embed_tokens(
+            np.array([token_id]),
+            params['embedding']
+        )
+
+        q = linear_projection(x, params['Wq'])
+        k = linear_projection(x, params['Wk'])
+        v = linear_projection(x, params['Wv'])
+
+        # Write K/V into this sequence's paged cache
+        append_to_paged_cache(
+            allocator,
+            seq['request_id'],
+            k,
+            v
+        )
+
+        # Attention over all cached tokens
+        attn = paged_attention_step(
+            q,
+            allocator,
+            seq['request_id']
+        )
+
+        # Output projections
+        attn = linear_projection(attn, params['Wo'])
+        logits = linear_projection(attn[0], params['W_out'])
+
+        # Sampling
+        temperature = sampling_config.get('temperature', 1.0)
+
+        if sampling_config.get('greedy', False) or temperature <= 0:
+            next_token = greedy_select(logits)
+        else:
+            logits = apply_temperature(logits, temperature)
+
+            top_k = sampling_config.get('top_k', 0)
+            if top_k > 0:
+                logits = top_k_filter(logits, top_k)
+
+            top_p = sampling_config.get('top_p', 1.0)
+            if top_p < 1.0:
+                logits = top_p_filter(logits, top_p)
+
+            probs = stable_softmax(logits)
+            next_token = sample_from_probs(probs, rng)
+
+        # Record generated token
+        seq['token_ids'].append(next_token)
+        seq['generated'].append(next_token)
+        seq['length'] += 1
+
+        # Check stopping conditions
+        if next_token == eos_token_id:
+            seq['done'] = True
+        elif len(seq['generated']) >= seq['max_new_tokens']:
+            seq['done'] = True
+
+    return running
 
 # Step 36 - run_continuous_batching (not yet solved)
 # TODO: implement
