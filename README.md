@@ -23,7 +23,7 @@ python scaffold.py
 - [x] **11.** linear_projection
 - [x] **12.** init_kv_cache
 - [x] **13.** append_kv
-- [ ] **14.** causal_attention
+- [x] **14.** causal_attention
 - [ ] **15.** model_prefill
 - [ ] **16.** model_decode_step
 - [ ] **17.** blocks_needed
