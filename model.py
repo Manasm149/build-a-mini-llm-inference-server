@@ -929,8 +929,117 @@ def submit_request(server_state, prompt, max_new_tokens, priority, vocab):
 
     return request_id
 
-# Step 44 - drive_until_complete (not yet solved)
-# TODO: implement
+# Step 44 - drive_until_complete
+def drive_until_complete(
+    server_state,
+    params,
+    vocab,
+    allocator,
+    config,
+    max_steps
+):
+    # Ensure canonical state keys exist.
+    server_state.setdefault('waiting_heap', [])
+    server_state.setdefault('running', [])
+    server_state.setdefault('completed', {})
+    server_state.setdefault('streams', [])
+
+    for _ in range(max_steps):
+        # Scheduling/admission.
+        schedule = schedule_step(
+            server_state['waiting_heap'],
+            server_state['running'],
+            allocator,
+            config.get('block_size', 1),
+            config.get('max_running', 1)
+        )
+
+        server_state['running'] = schedule['running']
+
+        # Prefill newly admitted requests.
+        for req in schedule['newly_admitted']:
+            prompt = list(req['prompt_token_ids'])
+            seq_id = req['request_id']
+
+            # Prefill.
+            logits, cache = model_prefill(prompt, params)
+
+            # Initialize paged-cache bookkeeping.
+            allocator['seq_tables'][seq_id] = []
+            allocator.setdefault('seq_lengths', {})
+            allocator['seq_lengths'][seq_id] = 0
+
+            append_to_paged_cache(
+                allocator,
+                seq_id,
+                cache['K'][:cache['length']],
+                cache['V'][:cache['length']]
+            )
+
+            server_state['running'].append({
+                'request_id': seq_id,
+                'token_ids': prompt,
+                'generated': [],
+                'length': len(prompt),
+                'done': False,
+                'max_new_tokens': req['max_new_tokens'],
+                'last_logits': logits,
+                'priority': req['priority'],
+                'prompt_token_ids': prompt
+            })
+
+        # Nothing running.
+        if not server_state['running']:
+            if not server_state['waiting_heap']:
+                break
+            continue
+
+        # One decode step.
+        continuous_batch_step(
+            params,
+            server_state['running'],
+            allocator,
+            config
+        )
+
+        still_running = []
+
+        for seq in server_state['running']:
+            if seq['generated']:
+                token_id = seq['generated'][-1]
+                token_text = decode_tokens(
+                    [token_id],
+                    vocab
+                )
+
+                chunk = format_stream_chunk(
+                    seq['request_id'],
+                    token_id,
+                    token_text,
+                    seq['done']
+                )
+
+                server_state['streams'].append(chunk)
+
+            if seq['done']:
+                server_state['completed'][seq['request_id']] = {
+                    'request_id': seq['request_id'],
+                    'output_ids': list(seq['generated'])
+                }
+
+                free_sequence_blocks(
+                    allocator,
+                    seq['request_id']
+                )
+            else:
+                still_running.append(seq)
+
+        server_state['running'] = still_running
+
+        if not server_state['running'] and not server_state['waiting_heap']:
+            break
+
+    return server_state['streams']
 
 # Step 45 - collect_request_output (not yet solved)
 # TODO: implement
