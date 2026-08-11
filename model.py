@@ -45,8 +45,37 @@ def top_k_filter(logits, k):
 
     return result
 
-# Step 4 - top_p_filter (not yet solved)
-# TODO: implement
+# Step 4 - top_p_filter
+def top_p_filter(logits, p):
+    logits = np.asarray(logits)
+    result = logits.copy()
+
+    def filter_row(row):
+        # Stable probabilities
+        shifted = row - np.max(row)
+        probs = np.exp(shifted)
+        probs /= np.sum(probs)
+
+        # Sort probabilities from largest to smallest
+        order = np.argsort(-probs)
+        sorted_probs = probs[order]
+        cumulative = np.cumsum(sorted_probs)
+
+        # Keep the smallest set whose cumulative probability >= p
+        cutoff = np.searchsorted(cumulative, p, side='left')
+        keep = order[:cutoff + 1]
+
+        mask = np.ones(row.shape, dtype=bool)
+        mask[keep] = False
+
+        row_result = row.copy()
+        row_result[mask] = -np.inf
+        return row_result
+
+    if logits.ndim == 1:
+        return filter_row(logits)
+
+    return np.stack([filter_row(row) for row in logits])
 
 # Step 5 - sample_from_probs (not yet solved)
 # TODO: implement
