@@ -85,8 +85,27 @@ def sample_from_probs(probs, rng):
 def greedy_select(logits):
     return int(np.argmax(logits))
 
-# Step 7 - build_vocab (not yet solved)
-# TODO: implement
+# Step 7 - build_vocab
+def build_vocab(corpus, special_tokens):
+    # Special tokens get the lowest IDs in the given order
+    tokens = list(special_tokens)
+
+    # Collect unique characters from the corpus
+    chars = set()
+    for text in corpus:
+        chars.update(text)
+
+    # Add remaining characters in sorted order
+    for ch in sorted(chars):
+        if ch not in tokens:
+            tokens.append(ch)
+
+    token_to_id = {token: i for i, token in enumerate(tokens)}
+
+    return {
+        'token_to_id': token_to_id,
+        'id_to_token': tokens
+    }
 
 # Step 8 - encode_prompt (not yet solved)
 # TODO: implement
