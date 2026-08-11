@@ -20,7 +20,7 @@ python scaffold.py
 - [x] **8.** encode_prompt
 - [x] **9.** decode_tokens
 - [x] **10.** embed_tokens
-- [ ] **11.** linear_projection
+- [x] **11.** linear_projection
 - [ ] **12.** init_kv_cache
 - [ ] **13.** append_kv
 - [ ] **14.** causal_attention

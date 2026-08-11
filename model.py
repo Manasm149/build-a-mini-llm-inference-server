@@ -146,8 +146,14 @@ def decode_tokens(token_ids, vocab, skip_special=True):
 def embed_tokens(token_ids, embedding_matrix):
     return embedding_matrix[np.asarray(token_ids)]
 
-# Step 11 - linear_projection (not yet solved)
-# TODO: implement
+# Step 11 - linear_projection
+def linear_projection(x, weight, bias=None):
+    y = x @ weight
+
+    if bias is not None:
+        y = y + bias
+
+    return y
 
 # Step 12 - init_kv_cache (not yet solved)
 # TODO: implement
