@@ -801,8 +801,13 @@ def run_continuous_batching(params, requests, allocator, sampling_config, max_st
 
     return completed
 
-# Step 37 - priority_queue_push (not yet solved)
-# TODO: implement
+# Step 37 - priority_queue_push
+import heapq
+
+def priority_queue_push(heap, priority, request):
+    counter = len(heap)
+    heapq.heappush(heap, (priority, counter, request))
+    return heap
 
 # Step 38 - priority_queue_pop (not yet solved)
 # TODO: implement
