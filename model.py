@@ -163,8 +163,21 @@ def init_kv_cache(max_seq_len, d_model):
         'length': 0
     }
 
-# Step 13 - append_kv (not yet solved)
-# TODO: implement
+# Step 13 - append_kv
+def append_kv(cache, k_new, v_new):
+    n = len(k_new)
+
+    if n == 0:
+        return cache
+
+    start = cache['length']
+    end = start + n
+
+    cache['K'][start:end] = k_new
+    cache['V'][start:end] = v_new
+    cache['length'] = end
+
+    return cache
 
 # Step 14 - causal_attention (not yet solved)
 # TODO: implement
