@@ -25,8 +25,25 @@ def apply_temperature(logits, temperature):
 
     return logits / temperature
 
-# Step 3 - top_k_filter (not yet solved)
-# TODO: implement
+# Step 3 - top_k_filter
+def top_k_filter(logits, k):
+    logits = np.asarray(logits)
+
+    if k >= logits.shape[-1]:
+        return logits.copy()
+
+    result = logits.copy()
+
+    if logits.ndim == 1:
+        threshold = np.partition(logits, -k)[-k]
+        result[logits < threshold] = -np.inf
+
+    else:
+        threshold = np.partition(logits, -k, axis=-1)[:, -k:]
+        threshold = np.min(threshold, axis=-1, keepdims=True)
+        result[logits < threshold] = -np.inf
+
+    return result
 
 # Step 4 - top_p_filter (not yet solved)
 # TODO: implement
