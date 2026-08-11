@@ -878,8 +878,25 @@ def preempt_sequence(sequence, allocator, waiting_heap):
 
     return request
 
-# Step 41 - schedule_step (not yet solved)
-# TODO: implement
+# Step 41 - schedule_step
+def schedule_step(waiting_heap, running, allocator, block_size, max_running):
+    while len(running) > max_running:
+        victim = running.pop()
+        preempt_sequence(victim, allocator, waiting_heap)
+
+    slots = max_running - len(running)
+
+    newly_admitted = select_admissions(
+        waiting_heap,
+        allocator,
+        block_size,
+        slots
+    )
+
+    return {
+        'running': running,
+        'newly_admitted': newly_admitted
+    }
 
 # Step 42 - format_stream_chunk (not yet solved)
 # TODO: implement
