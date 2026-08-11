@@ -55,7 +55,7 @@ python scaffold.py
 - [x] **43.** submit_request
 - [x] **44.** drive_until_complete
 - [x] **45.** collect_request_output
-- [ ] **46.** build_completion_response
+- [x] **46.** build_completion_response
 - [ ] **47.** time_to_first_token
 - [ ] **48.** inter_token_latency
 - [ ] **49.** aggregate_throughput

@@ -1059,8 +1059,24 @@ def collect_request_output(server_state, request_id):
         'chunks': record['chunks']
     }
 
-# Step 46 - build_completion_response (not yet solved)
-# TODO: implement
+# Step 46 - build_completion_response
+def build_completion_response(server_state, request_id, vocab):
+    record = collect_request_output(server_state, request_id)
+
+    if record is None:
+        return None
+
+    output_ids = list(record['output_ids'])
+
+    return {
+        'request_id': request_id,
+        'text': decode_tokens(output_ids, vocab, skip_special=True),
+        'output_ids': output_ids,
+        'finish_reason': server_state['completed'][request_id].get(
+            'finish_reason',
+            'stop'
+        )
+    }
 
 # Step 47 - time_to_first_token (not yet solved)
 # TODO: implement
