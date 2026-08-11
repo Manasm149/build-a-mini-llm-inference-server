@@ -1152,8 +1152,19 @@ def aggregate_throughput(events, total_time):
         'total_requests': total_requests
     }
 
-# Step 50 - latency_percentiles (not yet solved)
-# TODO: implement
+# Step 50 - latency_percentiles
+import numpy as np
+
+def latency_percentiles(latencies, percentiles):
+    if len(latencies) == 0:
+        return {float(p): 0.0 for p in percentiles}
+
+    values = np.asarray(latencies, dtype=float)
+
+    return {
+        float(p): float(np.percentile(values, p))
+        for p in percentiles
+    }
 
 # Step 51 - run_throughput_latency_benchmark (not yet solved)
 # TODO: implement
