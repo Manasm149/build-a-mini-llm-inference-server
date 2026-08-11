@@ -1041,8 +1041,23 @@ def drive_until_complete(
 
     return server_state['streams']
 
-# Step 45 - collect_request_output (not yet solved)
-# TODO: implement
+# Step 45 - collect_request_output
+def collect_request_output(server_state, request_id):
+    completed = server_state.get('completed')
+
+    if completed is None:
+        return None
+
+    record = completed.get(request_id)
+
+    if record is None:
+        return None
+
+    return {
+        'request_id': request_id,
+        'output_ids': record['output_ids'],
+        'chunks': record['chunks']
+    }
 
 # Step 46 - build_completion_response (not yet solved)
 # TODO: implement

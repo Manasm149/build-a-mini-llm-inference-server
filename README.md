@@ -54,7 +54,7 @@ python scaffold.py
 - [x] **42.** format_stream_chunk
 - [x] **43.** submit_request
 - [x] **44.** drive_until_complete
-- [ ] **45.** collect_request_output
+- [x] **45.** collect_request_output
 - [ ] **46.** build_completion_response
 - [ ] **47.** time_to_first_token
 - [ ] **48.** inter_token_latency
