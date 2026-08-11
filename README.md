@@ -21,7 +21,7 @@ python scaffold.py
 - [x] **9.** decode_tokens
 - [x] **10.** embed_tokens
 - [x] **11.** linear_projection
-- [ ] **12.** init_kv_cache
+- [x] **12.** init_kv_cache
 - [ ] **13.** append_kv
 - [ ] **14.** causal_attention
 - [ ] **15.** model_prefill
