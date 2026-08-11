@@ -26,7 +26,7 @@ python scaffold.py
 - [x] **14.** causal_attention
 - [x] **15.** model_prefill
 - [x] **16.** model_decode_step
-- [ ] **17.** blocks_needed
+- [x] **17.** blocks_needed
 - [ ] **18.** init_block_allocator
 - [ ] **19.** allocate_block
 - [ ] **20.** free_block
