@@ -845,8 +845,38 @@ def select_admissions(waiting_heap, allocator, block_size, max_admit):
 
     return admitted
 
-# Step 40 - preempt_sequence (not yet solved)
-# TODO: implement
+# Step 40 - preempt_sequence
+def preempt_sequence(sequence, allocator, waiting_heap):
+    seq_id = sequence['request_id']
+
+    # Release all blocks owned by this sequence.
+    blocks = allocator['seq_tables'].get(seq_id, [])
+
+    for block_id in blocks:
+        free_block(allocator, block_id)
+
+    # Remove the sequence from the allocator.
+    allocator['seq_tables'].pop(seq_id, None)
+
+    if 'seq_lengths' in allocator:
+        allocator['seq_lengths'].pop(seq_id, None)
+
+    # Rebuild the original request.
+    request = {
+        'request_id': sequence['request_id'],
+        'prompt_token_ids': list(sequence['prompt_token_ids']),
+        'max_new_tokens': sequence['max_new_tokens'],
+        'priority': sequence['priority']
+    }
+
+    # Put it back into the waiting priority queue.
+    priority_queue_push(
+        waiting_heap,
+        sequence['priority'],
+        request
+    )
+
+    return request
 
 # Step 41 - schedule_step (not yet solved)
 # TODO: implement
