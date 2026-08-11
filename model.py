@@ -684,8 +684,122 @@ def continuous_batch_step(params, running, allocator, sampling_config):
 
     return running
 
-# Step 36 - run_continuous_batching (not yet solved)
-# TODO: implement
+# Step 36 - run_continuous_batching
+def run_continuous_batching(params, requests, allocator, sampling_config, max_steps):
+    waiting = list(requests)
+    running = []
+    completed = []
+
+    def admit(req):
+        seq_id = req['request_id']
+        prompt = list(req['prompt_token_ids'])
+
+        required = blocks_needed(
+            len(prompt),
+            allocator['block_size']
+        )
+
+        if not has_free_capacity(allocator, required):
+            return False
+
+        # Create the paged-cache entry.
+        allocator['seq_tables'][seq_id] = []
+
+        if 'seq_lengths' not in allocator:
+            allocator['seq_lengths'] = {}
+
+        allocator['seq_lengths'][seq_id] = 0
+
+        # Prefill directly into the paged cache.
+        x = embed_tokens(
+            np.asarray(prompt, dtype=np.int64),
+            params['embedding']
+        )
+
+        q = linear_projection(x, params['Wq'])
+        k = linear_projection(x, params['Wk'])
+        v = linear_projection(x, params['Wv'])
+
+        append_to_paged_cache(
+            allocator,
+            seq_id,
+            k,
+            v
+        )
+
+        # Compute the last prompt position's attention.
+        attn = paged_attention_step(
+            q[-1:],
+            allocator,
+            seq_id
+        )
+
+        attn = linear_projection(attn, params['Wo'])
+        logits = linear_projection(attn[0], params['W_out'])
+
+        running.append({
+            'request_id': seq_id,
+            'token_ids': prompt,
+            'generated': [],
+            'length': len(prompt),
+            'done': False,
+            'max_new_tokens': req['max_new_tokens'],
+            'last_logits': logits
+        })
+
+        return True
+
+    for _ in range(max_steps):
+        # Admit as many waiting requests as capacity allows.
+        while waiting:
+            if not admit(waiting[0]):
+                break
+            waiting.pop(0)
+
+        if not running:
+            if not waiting:
+                break
+            continue
+
+        continuous_batch_step(
+            params,
+            running,
+            allocator,
+            sampling_config
+        )
+
+        still_running = []
+
+        for seq in running:
+            if seq['done']:
+                completed.append({
+                    'request_id': seq['request_id'],
+                    'output_ids': list(seq['generated'])
+                })
+
+                free_sequence_blocks(
+                    allocator,
+                    seq['request_id']
+                )
+            else:
+                still_running.append(seq)
+
+        running = still_running
+
+    # Requests still running because max_steps was reached
+    # are also returned with the tokens generated so far.
+    for seq in running:
+        completed.append({
+            'request_id': seq['request_id'],
+            'output_ids': list(seq['generated'])
+        })
+
+        free_sequence_blocks(
+            allocator,
+            seq['request_id']
+        )
+
+    return completed
 
 # Step 37 - priority_queue_push (not yet solved)
 # TODO: implement
